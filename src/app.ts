@@ -1,21 +1,21 @@
 // Import all dependencies, mostly using destructuring for better view.
 import {
-  ClientConfig,
-  Client,
+  JSONParseError,
   middleware,
   MiddlewareConfig,
+  SignatureValidationFailed,
   WebhookEvent,
-  TextMessage,
-  MessageAPIResponseBase,
 } from '@line/bot-sdk';
-import express, {Application, Request, Response} from 'express';
+import express, {
+  Application,
+  ErrorRequestHandler,
+  NextFunction,
+  Request,
+  Response,
+} from 'express';
+import {textEventHandler} from './controlles/webhook';
 
-// Setup all LINE client and Express configurations.
-const clientConfig: ClientConfig = {
-  channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN || '',
-  channelSecret: process.env.CHANNEL_SECRET,
-};
-
+// Setup Express configurations.
 const middlewareConfig: MiddlewareConfig = {
   channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
   channelSecret: process.env.CHANNEL_SECRET || '',
@@ -23,34 +23,30 @@ const middlewareConfig: MiddlewareConfig = {
 
 const PORT = process.env.PORT || 3000;
 
-// Create a new LINE SDK client.
-const client = new Client(clientConfig);
-
 // Create a new Express application.
 const app: Application = express();
 
-// Function handler to receive the text.
-const textEventHandler = async (
-  event: WebhookEvent
-): Promise<MessageAPIResponseBase | undefined> => {
-  // Process all variables here.
-  if (event.type !== 'message' || event.message.type !== 'text') {
-    return;
+// Express configuration
+app.set('port', PORT);
+
+// error handling
+app.use(
+  (
+    err: ErrorRequestHandler,
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    if (err instanceof SignatureValidationFailed) {
+      res.status(401).send(err.signature);
+      return;
+    } else if (err instanceof JSONParseError) {
+      res.status(400).send(err.raw);
+      return;
+    }
+    next(err); // will throw default 500
   }
-
-  // Process all message related variables here.
-  const {replyToken} = event;
-  const {text} = event.message;
-
-  // Create a new message.
-  const response: TextMessage = {
-    type: 'text',
-    text,
-  };
-
-  // Reply to the user.
-  return await client.replyMessage(replyToken, response);
-};
+);
 
 // Register the LINE middleware.
 // As an alternative, you could also pass the middleware in the route handler, which is what is used here.
@@ -101,7 +97,4 @@ app.post(
   }
 );
 
-// Create a server and listen to it.
-app.listen(PORT, () => {
-  console.log(`Application is live and listening on port ${PORT}`);
-});
+export default app;
