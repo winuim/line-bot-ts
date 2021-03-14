@@ -13,7 +13,9 @@ import express, {
   Request,
   Response,
 } from 'express';
-import {textEventHandler} from './controlles/webhook';
+import morgan from 'morgan';
+import path from 'path';
+import {handleEvent} from './controllers/webhook';
 
 // Setup Express configurations.
 const middlewareConfig: MiddlewareConfig = {
@@ -28,6 +30,10 @@ const app: Application = express();
 
 // Express configuration
 app.set('port', PORT);
+app.use(morgan('combined'));
+
+// serve static files
+app.use(express.static(path.join(__dirname, 'public'), {maxAge: 31557600000}));
 
 // error handling
 app.use(
@@ -69,13 +75,24 @@ app.post(
   '/webhook',
   middleware(middlewareConfig),
   async (req: Request, res: Response): Promise<Response> => {
+    if (req.body.destination) {
+      console.log('Destination User ID: ' + req.body.destination);
+    }
+
+    // req.body.events should be an array of events
+    if (!Array.isArray(req.body.events)) {
+      return res.status(500).json({
+        status: 'error',
+      });
+    }
+
     const events: WebhookEvent[] = req.body.events;
 
     // Process all of the received events asynchronously.
     const results = await Promise.all(
       events.map(async (event: WebhookEvent) => {
         try {
-          return await textEventHandler(event);
+          return await handleEvent(event);
         } catch (err: unknown) {
           if (err instanceof Error) {
             console.error(err);
