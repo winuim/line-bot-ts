@@ -2,15 +2,16 @@
   "name": "line-bot-ts",
   "version": "1.0.0",
   "description": "An example LINE bot with TypeScript made to echo messages",
-  "main": "./dist/index.js",
+  "main": "./dist/server.js",
   "scripts": {
     "clean": "gts clean",
-    "build": "npm run clean && npm run compile",
-    "start": "node -r dotenv/config dist/index.js",
+    "build": "npm run clean && npm run compile && npm run copy-static-assets",
+    "start": "node -r dotenv/config dist/server.js",
     "test": "jest",
     "lint": "gts lint",
     "compile": "tsc --pretty",
     "fix": "gts fix",
+    "copy-static-assets": "ts-node copyStaticAssets.ts",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
     "posttest": "npm run lint"
@@ -50,7 +51,8 @@
     "dotenv": "^8.2.0",
     "errorhandler": "^1.5.1",
     "express": "^4.17.1",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "morgan-body": "^2.6.5"
   },
   "devDependencies": {
     "@types/errorhandler": "^1.5.0",
@@ -58,6 +60,7 @@
     "@types/jest": "^26.0.20",
     "@types/morgan": "^1.9.2",
     "@types/node": "^14.14.33",
+    "@types/shelljs": "^0.8.8",
     "@typescript-eslint/eslint-plugin": "^4.17.0",
     "@typescript-eslint/parser": "^4.17.0",
     "eslint": "^7.21.0",
@@ -68,6 +71,7 @@
     "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
+    "shelljs": "^0.8.4",
     "ts-jest": "^26.5.3",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.3"
