@@ -15,6 +15,7 @@ import express, {
 } from 'express';
 import morgan from 'morgan';
 import path from 'path';
+import {initAuth, authCallback} from './controllers/fitbit';
 import {handleEvent} from './controllers/webhook';
 
 // Setup Express configurations.
@@ -69,6 +70,10 @@ app.get(
     });
   }
 );
+
+// fitbit auth callback
+app.get('/fitbit/auth', initAuth);
+app.get('/fitbit/callback', authCallback);
 
 // This route is used for the Webhook.
 app.post(
