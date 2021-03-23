@@ -38,11 +38,6 @@ export const authCallback = async (
       console.log(updatedToken.accessToken);
     });
 
-    token.sign({
-      method: 'get',
-      url: 'https://api.fitbit.com/1/user/-/',
-    });
-
     return res.status(200).json({
       status: 'success',
       message: 'Authorized successfully!',
@@ -54,7 +49,7 @@ export const getProfile = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  return fitbitAuth.credentials.getToken().then(token => {
+  return fitbitAuth.code.getToken(req.originalUrl).then(token => {
     console.log(token);
 
     token.refresh().then(updatedToken => {
@@ -64,8 +59,7 @@ export const getProfile = async (
 
     axios(
       token.sign({
-        baseUrl: 'https://api.fitbit.com/1/user/-',
-        url: '/profile.json',
+        url: 'https://api.fitbit.com/1/user/-/profile.json',
       })
     )
       .then(response => {
