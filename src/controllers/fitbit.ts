@@ -2,6 +2,9 @@ import {Request, Response} from 'express';
 import ClientOAuth2 from 'client-oauth2';
 import axios from 'axios';
 
+const FITBIT_API_BASE_URL = 'https://api.fitbit.com/1/';
+const FITBIT_API_PROFILE = '/user/-/profile.json';
+
 const fitbitAuth = new ClientOAuth2({
   clientId: process.env.FITBIT_CLIENT_ID,
   clientSecret: process.env.FIBIT_CLIENT_SECRET,
@@ -21,6 +24,8 @@ const fitbitAuth = new ClientOAuth2({
   ],
 });
 
+let fitbitToken: ClientOAuth2.Token;
+
 export const initAuth = async (req: Request, res: Response) => {
   const uri = fitbitAuth.code.getUri();
   res.redirect(uri);
@@ -32,6 +37,7 @@ export const authCallback = async (
 ): Promise<Response> => {
   return fitbitAuth.code.getToken(req.originalUrl).then(token => {
     console.log(token);
+    fitbitToken = token;
 
     token.refresh().then(updatedToken => {
       console.log(updatedToken !== token);
@@ -49,34 +55,31 @@ export const getProfile = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  return fitbitAuth.code.getToken(req.originalUrl).then(token => {
-    console.log(token);
+  fitbitToken.refresh().then(updatedToken => {
+    console.log(updatedToken !== fitbitToken);
+    console.log(updatedToken.accessToken);
+  });
 
-    token.refresh().then(updatedToken => {
-      console.log(updatedToken !== token);
-      console.log(updatedToken.accessToken);
+  axios(
+    fitbitToken.sign({
+      baseURL: FITBIT_API_BASE_URL,
+      url: FITBIT_API_PROFILE,
+    })
+  )
+    .then(response => {
+      // handle success
+      console.log(response.data);
+    })
+    .catch(error => {
+      // handle error
+      console.log(error);
+    })
+    .then(() => {
+      // always executed
     });
 
-    axios(
-      token.sign({
-        url: 'https://api.fitbit.com/1/user/-/profile.json',
-      })
-    )
-      .then(response => {
-        // handle success
-        console.log(response);
-      })
-      .catch(error => {
-        // handle error
-        console.log(error);
-      })
-      .then(() => {
-        // always executed
-      });
-
-    return res.status(200).json({
-      status: 'success',
-      message: 'Authorized successfully!',
-    });
+  return res.status(200).json({
+    status: 'success',
+    message: 'Authorized successfully!',
   });
 };
