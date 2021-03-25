@@ -13,6 +13,7 @@ import {
 import cp from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import {fitbitAuth} from './fitbit';
 
 import botText from '../config/botText.json';
 
@@ -159,6 +160,10 @@ export const handleText = (
       }
     }
     // eslint-disable-next-line no-fallthrough
+    case 'fitbit': {
+      const uri = fitbitAuth.code.getUri();
+      return replyText(replyToken, uri);
+    }
     default: {
       const textKey = message.text;
       if (textKey in botText) {

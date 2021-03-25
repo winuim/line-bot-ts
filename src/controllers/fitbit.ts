@@ -2,10 +2,10 @@ import {Request, Response} from 'express';
 import ClientOAuth2 from 'client-oauth2';
 import axios from 'axios';
 
-const FITBIT_API_BASE_URL = 'https://api.fitbit.com/1/';
-const FITBIT_API_PROFILE = '/user/-/profile.json';
+const FITBIT_API_BASE_URL = 'https://api.fitbit.com/1/user/-/';
+const FITBIT_API_PROFILE = '/profile.json';
 
-const fitbitAuth = new ClientOAuth2({
+export const fitbitAuth = new ClientOAuth2({
   clientId: process.env.FITBIT_CLIENT_ID,
   clientSecret: process.env.FIBIT_CLIENT_SECRET,
   accessTokenUri: 'https://api.fitbit.com/oauth2/token',
