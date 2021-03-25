@@ -3,6 +3,10 @@
     "type": "text",
     "text": "pong"
   },
+  "テスト": {
+    "type": "text",
+    "text": "てすと"
+  },
   "buttons": {
     "type": "template",
     "altText": "Buttons alt text",
