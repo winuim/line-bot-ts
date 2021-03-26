@@ -22,6 +22,9 @@ export const fitbitAuth = new ClientOAuth2({
     'social',
     'weight',
   ],
+  query: {
+    expires_in: '86400',
+  },
 });
 
 let fitbitToken: ClientOAuth2.Token;
@@ -38,12 +41,6 @@ export const authCallback = async (
   return fitbitAuth.code.getToken(req.originalUrl).then(token => {
     console.log(token);
     fitbitToken = token;
-
-    token.refresh().then(updatedToken => {
-      console.log(updatedToken !== token);
-      console.log(updatedToken.accessToken);
-    });
-
     return res.status(200).json({
       status: 'success',
       message: 'Authorized successfully!',
