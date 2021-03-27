@@ -118,4 +118,12 @@ app.post(
   }
 );
 
+// heartbeat
+app.get(
+  '/heartbeat',
+  async (_: Request, res: Response): Promise<Response> => {
+    return res.status(200).send('working!');
+  }
+);
+
 export default app;
