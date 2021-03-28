@@ -15,7 +15,12 @@ import express, {
 } from 'express';
 import morgan from 'morgan';
 import path from 'path';
-import {authCallback} from './controllers/fitbit';
+import {
+  authCallback,
+  getActivity,
+  getProfile,
+  initAuth,
+} from './controllers/fitbit';
 import {handleEvent} from './controllers/webhook';
 
 // Setup Express configurations.
@@ -55,10 +60,6 @@ app.use(
   }
 );
 
-// Register the LINE middleware.
-// As an alternative, you could also pass the middleware in the route handler, which is what is used here.
-// app.use(middleware(middlewareConfig));
-
 // Route handler to receive webhook events.
 // This route is used to receive connection tests.
 app.get(
@@ -71,8 +72,20 @@ app.get(
   }
 );
 
-// fitbit auth callback
-app.get('/fitbit/callback', authCallback);
+// heartbeat
+app.get(
+  '/heartbeat',
+  async (_: Request, res: Response): Promise<Response> => {
+    return res.status(200).json({
+      status: 'success',
+      message: 'working',
+    });
+  }
+);
+
+// Register the LINE middleware.
+// As an alternative, you could also pass the middleware in the route handler, which is what is used here.
+// app.use(middleware(middlewareConfig));
 
 // This route is used for the Webhook.
 app.post(
@@ -118,12 +131,10 @@ app.post(
   }
 );
 
-// heartbeat
-app.get(
-  '/heartbeat',
-  async (_: Request, res: Response): Promise<Response> => {
-    return res.status(200).send('working!');
-  }
-);
+// fitbit auth callback
+app.get('/fitbit/auth', initAuth);
+app.get('/fitbit/callback', authCallback);
+app.get('/fitbit/profile', getProfile);
+app.get('/fitbit/activity', getActivity);
 
 export default app;
