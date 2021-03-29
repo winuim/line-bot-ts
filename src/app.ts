@@ -15,6 +15,8 @@ import express, {
 } from 'express';
 import morgan from 'morgan';
 import path from 'path';
+import schedule from 'node-schedule';
+
 import {
   authCallback,
   getActivity,
@@ -22,6 +24,10 @@ import {
   initAuth,
 } from './controllers/fitbit';
 import {handleEvent} from './controllers/webhook';
+
+const job = schedule.scheduleJob('* */4 * * *', () => {
+  console.log('The answer to life, the universe, and everything!');
+});
 
 // Setup Express configurations.
 const middlewareConfig: MiddlewareConfig = {
