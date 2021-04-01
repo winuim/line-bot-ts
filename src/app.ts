@@ -21,6 +21,7 @@ import {
   authCallback,
   getActivity,
   getProfile,
+  getStep,
   initAuth,
 } from './controllers/fitbit';
 import {handleEvent} from './controllers/webhook';
@@ -142,5 +143,6 @@ app.get('/fitbit/auth', initAuth);
 app.get('/fitbit/callback', authCallback);
 app.get('/fitbit/profile', getProfile);
 app.get('/fitbit/activity', getActivity);
+app.get('/fitbit/step', getStep);
 
 export default app;

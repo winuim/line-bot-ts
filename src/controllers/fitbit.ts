@@ -5,6 +5,7 @@ import axios from 'axios';
 const FITBIT_API_BASE_URL = 'https://api.fitbit.com/1/user/-/';
 const FITBIT_API_PROFILE = '/profile.json';
 const FITBIT_API_ACTIVITY_DAILY = '/activities/date/[date].json';
+const FITBIT_API_ACTIVITY_STEP = '/activities/steps/date/today/1d.json';
 
 type FitbitUnknownType =
   | boolean
@@ -205,6 +206,35 @@ export const getActivity = async (
     '-' +
     ('0' + today.getDate()).slice(-2);
   const _url = FITBIT_API_ACTIVITY_DAILY.replace('[date]', formattedDate);
+  console.log(_url);
+  return axios(
+    token.sign({
+      baseURL: FITBIT_API_BASE_URL,
+      url: _url,
+    })
+  )
+    .then(response => {
+      // handle success
+      console.log(response.data);
+      return res.status(200).json(response.data);
+    })
+    .catch(error => {
+      // handle error
+      console.log(error);
+      return res.status(400).json(error);
+    });
+};
+
+export const getStep = async (
+  req: Request,
+  res: Response
+): Promise<Response | void> => {
+  const token = await getToken();
+  if (typeof token === 'string') {
+    return res.redirect(token);
+  }
+
+  const _url = FITBIT_API_ACTIVITY_STEP;
   console.log(_url);
   return axios(
     token.sign({
