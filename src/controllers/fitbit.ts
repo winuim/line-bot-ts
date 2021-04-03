@@ -6,6 +6,7 @@ const FITBIT_API_BASE_URL = 'https://api.fitbit.com/1/user/-/';
 const FITBIT_API_PROFILE = '/profile.json';
 const FITBIT_API_ACTIVITY_DAILY = '/activities/date/[date].json';
 const FITBIT_API_ACTIVITY_STEP = '/activities/steps/date/today/1d.json';
+const FITBIT_API_ACTIVITY_HEART_RATE = '/activities/heart/date/today/1d.json';
 
 type FitbitUnknownType =
   | boolean
@@ -142,6 +143,17 @@ const getToken = async () => {
   }
 };
 
+const replaceToday = (url_path: string) => {
+  const today = new Date();
+  const formatDate =
+    today.getFullYear() +
+    '-' +
+    ('0' + (today.getMonth() + 1)).slice(-2) +
+    '-' +
+    ('0' + today.getDate()).slice(-2);
+  return url_path.replace('[date]', formatDate);
+};
+
 export const initAuth = async (req: Request, res: Response) => {
   const uri = fitbitAuth.code.getUri();
   res.redirect(uri);
@@ -198,14 +210,7 @@ export const getActivity = async (
     return res.redirect(token);
   }
 
-  const today = new Date();
-  const formattedDate =
-    today.getFullYear() +
-    '-' +
-    ('0' + (today.getMonth() + 1)).slice(-2) +
-    '-' +
-    ('0' + today.getDate()).slice(-2);
-  const _url = FITBIT_API_ACTIVITY_DAILY.replace('[date]', formattedDate);
+  const _url = replaceToday(FITBIT_API_ACTIVITY_DAILY);
   console.log(_url);
   return axios(
     token.sign({
@@ -235,6 +240,35 @@ export const getStep = async (
   }
 
   const _url = FITBIT_API_ACTIVITY_STEP;
+  console.log(_url);
+  return axios(
+    token.sign({
+      baseURL: FITBIT_API_BASE_URL,
+      url: _url,
+    })
+  )
+    .then(response => {
+      // handle success
+      console.log(response.data);
+      return res.status(200).json(response.data);
+    })
+    .catch(error => {
+      // handle error
+      console.log(error);
+      return res.status(400).json(error);
+    });
+};
+
+export const getHeartRate = async (
+  req: Request,
+  res: Response
+): Promise<Response | void> => {
+  const token = await getToken();
+  if (typeof token === 'string') {
+    return res.redirect(token);
+  }
+
+  const _url = FITBIT_API_ACTIVITY_HEART_RATE;
   console.log(_url);
   return axios(
     token.sign({

@@ -19,6 +19,7 @@ import path from 'path';
 import {
   authCallback,
   getActivity,
+  getHeartRate,
   getProfile,
   getStep,
   initAuth,
@@ -139,5 +140,6 @@ app.get('/fitbit/callback', authCallback);
 app.get('/fitbit/profile', getProfile);
 app.get('/fitbit/activity', getActivity);
 app.get('/fitbit/step', getStep);
+app.get('/fitbit/heartrate', getHeartRate);
 
 export default app;
