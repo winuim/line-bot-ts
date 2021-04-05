@@ -21,7 +21,7 @@ import {
   getActivity,
   getHeartRate,
   getProfile,
-  getStep,
+  getSteps,
   initAuth,
 } from './controllers/fitbit';
 import {handleEvent} from './controllers/webhook';
@@ -139,7 +139,7 @@ app.get('/fitbit/auth', initAuth);
 app.get('/fitbit/callback', authCallback);
 app.get('/fitbit/profile', getProfile);
 app.get('/fitbit/activity', getActivity);
-app.get('/fitbit/step', getStep);
+app.get('/fitbit/steps', getSteps);
 app.get('/fitbit/heartrate', getHeartRate);
 
 export default app;

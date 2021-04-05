@@ -2,34 +2,14 @@ import {Request, Response} from 'express';
 import ClientOAuth2 from 'client-oauth2';
 import axios from 'axios';
 import {
+  fitbitAuth,
   FITBIT_API_ACTIVITY_DAILY,
   FITBIT_API_ACTIVITY_HEART_RATE,
   FITBIT_API_ACTIVITY_STEP,
   FITBIT_API_BASE_URL,
   FITBIT_API_PROFILE,
+  ResponseFitbitProfile,
 } from '../lib/fitbitApi';
-
-export const fitbitAuth = new ClientOAuth2({
-  clientId: process.env.FITBIT_CLIENT_ID,
-  clientSecret: process.env.FIBIT_CLIENT_SECRET,
-  accessTokenUri: 'https://api.fitbit.com/oauth2/token',
-  authorizationUri: 'https://www.fitbit.com/oauth2/authorize',
-  redirectUri: process.env.BASE_URL + '/fitbit/callback',
-  scopes: [
-    'activity',
-    'heartrate',
-    'location',
-    'nutrition',
-    'profile',
-    'settings',
-    'sleep',
-    'social',
-    'weight',
-  ],
-  query: {
-    expires_in: '86400',
-  },
-});
 
 let fitbitToken: ClientOAuth2.Token;
 
@@ -95,7 +75,8 @@ export const getProfile = async (
     .then(response => {
       // handle success
       console.log(response.data);
-      return res.status(200).json(response.data);
+      const profile = response.data as ResponseFitbitProfile;
+      return res.status(200).json(profile.user);
     })
     .catch(error => {
       // handle error
@@ -133,7 +114,7 @@ export const getActivity = async (
     });
 };
 
-export const getStep = async (
+export const getSteps = async (
   req: Request,
   res: Response
 ): Promise<Response | void> => {

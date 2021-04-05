@@ -13,9 +13,9 @@ import {
 import cp from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import {fitbitAuth} from './fitbit';
 
 import botText from '../config/botText.json';
+import {fitbitAuth} from '../lib/fitbitApi';
 
 type BotText = typeof botText;
 type botTextKey = keyof BotText;

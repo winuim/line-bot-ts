@@ -1,6 +1,11 @@
+import axios from 'axios';
+import ClientOAuth2 from 'client-oauth2';
+
 export const FITBIT_API_BASE_URL = 'https://api.fitbit.com/1/user/-/';
 export const FITBIT_API_PROFILE = '/profile.json';
 export const FITBIT_API_ACTIVITY_DAILY = '/activities/date/[date].json';
+export const FITBIT_API_ACTIVITY_TODAY =
+  '/activities/[resource-path]/date/today/1d.json';
 export const FITBIT_API_ACTIVITY_STEP = '/activities/steps/date/today/1d.json';
 export const FITBIT_API_ACTIVITY_HEART_RATE =
   '/activities/heart/date/today/1d.json';
@@ -12,11 +17,11 @@ type FitbitUnknownType =
   | FitbitUnknownType[]
   | {[key: string]: FitbitUnknownType};
 
-type FitBitClockTimeDisplayFormat = '12hour' | '24hour';
+type FitbitClockTimeDisplayFormat = '12hour' | '24hour';
 
-type FitBitGender = 'FEMALE' | 'MALE' | 'NA';
+type FitbitGender = 'FEMALE' | 'MALE' | 'NA';
 
-type FitBitLocale =
+type FitbitLocale =
   | 'en_US'
   | 'fr_FR'
   | 'de_DE'
@@ -26,23 +31,29 @@ type FitBitLocale =
   | 'en_NZ'
   | 'ja_JP';
 
-interface ResponseFitbitProfile {
+type FitbitResponse =
+  | ResponseFitbitProfile
+  | ResponseFitbitDailyActivitySummary
+  | ResponseFitbitActivityStep
+  | ResponseFitbitHeartRate;
+
+export interface ResponseFitbitProfile {
   user: FitibitUser;
 }
 
-interface ResponseFitbitDailyActivitySummary {
+export interface ResponseFitbitDailyActivitySummary {
   activities: FitbitActivity;
   goals: FitbitGoals;
   summary: FitbitSummary;
 }
 
-interface ResponseFitbitActivityStep {
+export interface ResponseFitbitActivityStep {
   'activities-steps': FitbitStep[];
   'activities-steps-intraday': FitbitActivitiesIntraday;
 }
 
-interface ResponseFitbitHearrate {
-  'activities-heart': FitbitHeart[];
+export interface ResponseFitbitHeartRate {
+  'activities-heart': FitbitHeartRate[];
   'activities-heart-intraday': FitbitActivitiesIntraday;
 }
 
@@ -66,7 +77,7 @@ interface FitibitUser {
   avatar640: string;
   averageDailySteps: number;
   challengesBeta: boolean;
-  clockTimeDisplayFormat: FitBitClockTimeDisplayFormat;
+  clockTimeDisplayFormat: FitbitClockTimeDisplayFormat;
   corporate: boolean;
   corporateAdmin: boolean;
   country: string;
@@ -80,7 +91,7 @@ interface FitibitUser {
   };
   foodsLocale: string;
   fullName: string;
-  gender: FitBitGender;
+  gender: FitbitGender;
   glucoseUnit: string;
   height: number;
   heightUnit: string;
@@ -89,7 +100,7 @@ interface FitibitUser {
   isCoach: boolean;
   languageLocale: string;
   legalTermsAcceptRequired: boolean;
-  locale: FitBitLocale;
+  locale: FitbitLocale;
   memberSince: string;
   mfaEnabled: boolean;
   offsetFromUTCMillis: number;
@@ -199,10 +210,71 @@ interface FitbitStep {
   value: string;
 }
 
-interface FitbitHeart {
+interface FitbitHeartRate {
   dateTime: string;
   value: {
     customHeartRateZones: FitbitHeartRateZone[];
     heartRateZones: FitbitHeartRateZone[];
   };
 }
+
+export const fitbitAuth = new ClientOAuth2({
+  clientId: process.env.FITBIT_CLIENT_ID,
+  clientSecret: process.env.FIBIT_CLIENT_SECRET,
+  accessTokenUri: 'https://api.fitbit.com/oauth2/token',
+  authorizationUri: 'https://www.fitbit.com/oauth2/authorize',
+  redirectUri: process.env.BASE_URL + '/fitbit/callback',
+  scopes: [
+    'activity',
+    'heartrate',
+    'location',
+    'nutrition',
+    'profile',
+    'settings',
+    'sleep',
+    'social',
+    'weight',
+  ],
+  query: {
+    expires_in: '86400',
+  },
+});
+
+let fitbitToken: ClientOAuth2.Token;
+
+const getToken = async () => {
+  if (fitbitToken === undefined) {
+    return fitbitAuth.code.getUri();
+  } else {
+    if (fitbitToken.expired()) {
+      fitbitToken = await fitbitToken.refresh().then(updatedToken => {
+        return updatedToken;
+      });
+    }
+    return fitbitToken;
+  }
+};
+
+const getActivity = async (resourcePath: string) => {
+  const token = await getToken();
+  if (typeof token === 'string') {
+    return token;
+  }
+
+  return axios(
+    token.sign({
+      baseURL: FITBIT_API_BASE_URL,
+      url: FITBIT_API_ACTIVITY_TODAY.replace('[resource-path]', resourcePath),
+    })
+  )
+    .then(response => {
+      // handle success
+      console.log(response.data);
+      return response.data;
+    })
+    .catch(error => {
+      // handle error
+      console.log(error);
+      return error.message;
+    });
+};
