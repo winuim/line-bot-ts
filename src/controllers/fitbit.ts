@@ -1,5 +1,4 @@
 import {Request, Response} from 'express';
-import ClientOAuth2 from 'client-oauth2';
 import axios from 'axios';
 import {
   fitbitAuth,
@@ -8,23 +7,10 @@ import {
   FITBIT_API_ACTIVITY_STEP,
   FITBIT_API_BASE_URL,
   FITBIT_API_PROFILE,
+  getFitbitToken,
   ResponseFitbitProfile,
+  setFitbitToken,
 } from '../lib/fitbitApi';
-
-let fitbitToken: ClientOAuth2.Token;
-
-const getToken = async () => {
-  if (fitbitToken === undefined) {
-    return fitbitAuth.code.getUri();
-  } else {
-    if (fitbitToken.expired()) {
-      fitbitToken = await fitbitToken.refresh().then(updatedToken => {
-        return updatedToken;
-      });
-    }
-    return fitbitToken;
-  }
-};
 
 const replaceToday = (url_path: string) => {
   const today = new Date();
@@ -48,7 +34,7 @@ export const authCallback = async (
 ): Promise<Response> => {
   return fitbitAuth.code.getToken(req.originalUrl).then(token => {
     console.log(token);
-    fitbitToken = token;
+    setFitbitToken(token);
     return res.status(200).json({
       status: 'success',
       message: 'Authorized successfully!',
@@ -61,7 +47,7 @@ export const getProfile = async (
   req: Request,
   res: Response
 ): Promise<Response | void> => {
-  const token = await getToken();
+  const token = await getFitbitToken();
   if (typeof token === 'string') {
     return res.redirect(token);
   }
@@ -89,7 +75,7 @@ export const getActivity = async (
   req: Request,
   res: Response
 ): Promise<Response | void> => {
-  const token = await getToken();
+  const token = await getFitbitToken();
   if (typeof token === 'string') {
     return res.redirect(token);
   }
@@ -118,7 +104,7 @@ export const getSteps = async (
   req: Request,
   res: Response
 ): Promise<Response | void> => {
-  const token = await getToken();
+  const token = await getFitbitToken();
   if (typeof token === 'string') {
     return res.redirect(token);
   }
@@ -147,7 +133,7 @@ export const getHeartRate = async (
   req: Request,
   res: Response
 ): Promise<Response | void> => {
-  const token = await getToken();
+  const token = await getFitbitToken();
   if (typeof token === 'string') {
     return res.redirect(token);
   }

@@ -1,4 +1,3 @@
-import axios from 'axios';
 import ClientOAuth2 from 'client-oauth2';
 
 export const FITBIT_API_BASE_URL = 'https://api.fitbit.com/1/user/-/';
@@ -42,7 +41,7 @@ export interface ResponseFitbitProfile {
 }
 
 export interface ResponseFitbitDailyActivitySummary {
-  activities: FitbitActivity;
+  activities: FitbitActivity[];
   goals: FitbitGoals;
   summary: FitbitSummary;
 }
@@ -242,7 +241,11 @@ export const fitbitAuth = new ClientOAuth2({
 
 let fitbitToken: ClientOAuth2.Token;
 
-const getToken = async () => {
+export const setFitbitToken = (token: ClientOAuth2.Token) => {
+  fitbitToken = token;
+};
+
+export const getFitbitToken = async () => {
   if (fitbitToken === undefined) {
     return fitbitAuth.code.getUri();
   } else {
@@ -253,28 +256,4 @@ const getToken = async () => {
     }
     return fitbitToken;
   }
-};
-
-const getActivity = async (resourcePath: string) => {
-  const token = await getToken();
-  if (typeof token === 'string') {
-    return token;
-  }
-
-  return axios(
-    token.sign({
-      baseURL: FITBIT_API_BASE_URL,
-      url: FITBIT_API_ACTIVITY_TODAY.replace('[resource-path]', resourcePath),
-    })
-  )
-    .then(response => {
-      // handle success
-      console.log(response.data);
-      return response.data;
-    })
-    .catch(error => {
-      // handle error
-      console.log(error);
-      return error.message;
-    });
 };

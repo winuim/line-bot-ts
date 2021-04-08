@@ -10,12 +10,18 @@ import {
   VideoEventMessage,
   WebhookEvent,
 } from '@line/bot-sdk';
+import axios from 'axios';
 import cp from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
 import botText from '../config/botText.json';
-import {fitbitAuth} from '../lib/fitbitApi';
+import {
+  FITBIT_API_ACTIVITY_DAILY,
+  FITBIT_API_BASE_URL,
+  getFitbitToken,
+  ResponseFitbitDailyActivitySummary,
+} from '../lib/fitbitApi';
 
 type BotText = typeof botText;
 type botTextKey = keyof BotText;
@@ -161,8 +167,38 @@ export const handleText = (
     }
     // eslint-disable-next-line no-fallthrough
     case 'fitbit': {
-      const uri = fitbitAuth.code.getUri();
-      return replyText(replyToken, uri);
+      return getFitbitToken().then(token => {
+        if (typeof token === 'string') {
+          return replyText(replyToken, token);
+        } else {
+          const today = new Date();
+          const formatDate =
+            today.getFullYear() +
+            '-' +
+            ('0' + (today.getMonth() + 1)).slice(-2) +
+            '-' +
+            ('0' + today.getDate()).slice(-2);
+          return axios(
+            token.sign({
+              baseURL: FITBIT_API_BASE_URL,
+              url: FITBIT_API_ACTIVITY_DAILY.replace('[date]', formatDate),
+            })
+          )
+            .then(response => {
+              console.log(response.data);
+              const fitbitResponse = response.data as ResponseFitbitDailyActivitySummary;
+              return replyText(replyToken, [
+                "today's steps = " + fitbitResponse.summary.steps,
+                "today's calories = " + fitbitResponse.summary.caloriesOut,
+              ]);
+            })
+            .catch(error => {
+              // handle error
+              console.log(error);
+              return replyText(replyToken, error.message);
+            });
+        }
+      });
     }
     default: {
       const textKey = message.text;
