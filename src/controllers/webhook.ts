@@ -187,10 +187,19 @@ export const handleText = (
             .then(response => {
               console.log(response.data);
               const fitbitResponse = response.data as ResponseFitbitDailyActivitySummary;
-              return replyText(replyToken, [
-                "today's steps = " + fitbitResponse.summary.steps,
-                "today's calories = " + fitbitResponse.summary.caloriesOut,
-              ]);
+              return replyText(
+                replyToken,
+                [
+                  "today's activity summary ",
+                  ', steps = ' + fitbitResponse.summary.steps,
+                  ', calories = ' + fitbitResponse.summary.caloriesOut,
+                  ', floors = ' + fitbitResponse.summary.floors,
+                  ', resting heart rate = ' +
+                    fitbitResponse.summary.restingHeartRate,
+                  ', sedentary minutes = ' +
+                    fitbitResponse.summary.sedentaryMinutes,
+                ].join('\n')
+              );
             })
             .catch(error => {
               // handle error
