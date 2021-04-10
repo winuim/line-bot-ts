@@ -20,6 +20,7 @@ import {
   FITBIT_API_ACTIVITY_DAILY,
   FITBIT_API_BASE_URL,
   getFitbitToken,
+  getFitbitUser,
   ResponseFitbitDailyActivitySummary,
 } from '../lib/fitbitApi';
 
@@ -169,7 +170,11 @@ export const handleText = (
     case 'fitbit': {
       return getFitbitToken().then(token => {
         if (typeof token === 'string') {
-          return replyText(replyToken, token);
+          return replyText(replyToken, [
+            'Fitbitデータへのアクセス許可が必要です',
+            '下記URLからFitbitデータへのアクセス許可をお願いします',
+            token,
+          ]);
         } else {
           const today = new Date();
           const formatDate =
@@ -187,10 +192,11 @@ export const handleText = (
             .then(response => {
               console.log(response.data);
               const fitbitResponse = response.data as ResponseFitbitDailyActivitySummary;
+              const displayName = getFitbitUser().displayName || 'unknown';
               return replyText(
                 replyToken,
                 [
-                  "today's activity summary ",
+                  "today's " + displayName + ' activity summary ',
                   ', steps = ' + fitbitResponse.summary.steps,
                   ', calories = ' + fitbitResponse.summary.caloriesOut,
                   ', floors = ' + fitbitResponse.summary.floors,

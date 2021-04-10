@@ -240,6 +240,7 @@ export const fitbitAuth = new ClientOAuth2({
 });
 
 let fitbitToken: ClientOAuth2.Token;
+let fitbitUser: FitibitUser;
 
 export const setFitbitToken = (token: ClientOAuth2.Token) => {
   fitbitToken = token;
@@ -256,4 +257,12 @@ export const getFitbitToken = async () => {
     }
     return fitbitToken;
   }
+};
+
+export const setFitbitProfile = (response: ResponseFitbitProfile) => {
+  fitbitUser = response.user;
+};
+
+export const getFitbitUser = () => {
+  return fitbitUser;
 };
