@@ -8,6 +8,8 @@ export const FITBIT_API_ACTIVITY_TODAY =
 export const FITBIT_API_ACTIVITY_STEP = '/activities/steps/date/today/1d.json';
 export const FITBIT_API_ACTIVITY_HEART_RATE =
   '/activities/heart/date/today/1d.json';
+export const FITBIT_API_SLEEP =
+  'https://api.fitbit.com/1.2/user/-/sleep/date/[date].json';
 
 type FitbitUnknownType =
   | boolean

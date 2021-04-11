@@ -21,6 +21,7 @@ import {
   getActivity,
   getHeartRate,
   getProfile,
+  getSleep,
   getSteps,
   initAuth,
 } from './controllers/fitbit';
@@ -141,5 +142,6 @@ app.get('/fitbit/profile', getProfile);
 app.get('/fitbit/activity', getActivity);
 app.get('/fitbit/steps', getSteps);
 app.get('/fitbit/heartrate', getHeartRate);
+app.get('/fitbit/sleep', getSleep);
 
 export default app;

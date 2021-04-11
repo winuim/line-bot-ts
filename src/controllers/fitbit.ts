@@ -7,6 +7,7 @@ import {
   FITBIT_API_ACTIVITY_STEP,
   FITBIT_API_BASE_URL,
   FITBIT_API_PROFILE,
+  FITBIT_API_SLEEP,
   getFitbitToken,
   ResponseFitbitProfile,
   setFitbitProfile,
@@ -182,6 +183,34 @@ export const getHeartRate = async (
   return axios(
     token.sign({
       baseURL: FITBIT_API_BASE_URL,
+      url: _url,
+    })
+  )
+    .then(response => {
+      // handle success
+      console.log(response.data);
+      return res.status(200).json(response.data);
+    })
+    .catch(error => {
+      // handle error
+      console.log(error);
+      return res.status(400).json(error);
+    });
+};
+
+export const getSleep = async (
+  req: Request,
+  res: Response
+): Promise<Response | void> => {
+  const token = await getFitbitToken();
+  if (typeof token === 'string') {
+    return res.redirect(token);
+  }
+
+  const _url = replaceToday(FITBIT_API_SLEEP);
+  console.log(_url);
+  return axios(
+    token.sign({
       url: _url,
     })
   )
