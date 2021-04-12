@@ -171,8 +171,7 @@ export const handleText = (
       return getFitbitToken().then(token => {
         if (typeof token === 'string') {
           return replyText(replyToken, [
-            'Fitbitデータへのアクセス許可が必要です',
-            '下記URLからFitbitデータへのアクセス許可をお願いします',
+            'Fitbitデータへのアクセス許可が必要です\n下記URLからFitbitデータへのアクセス許可をお願いします',
             token,
           ]);
         } else {
@@ -196,7 +195,7 @@ export const handleText = (
               return replyText(
                 replyToken,
                 [
-                  "today's " + displayName + ' activity summary ',
+                  displayName + "'s today activity summary ",
                   ', steps = ' + fitbitResponse.summary.steps,
                   ', calories = ' + fitbitResponse.summary.caloriesOut,
                   ', floors = ' + fitbitResponse.summary.floors,
