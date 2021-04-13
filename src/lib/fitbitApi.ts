@@ -32,11 +32,12 @@ type FitbitLocale =
   | 'en_NZ'
   | 'ja_JP';
 
-type FitbitResponse =
+export type FitbitResponse =
   | ResponseFitbitProfile
   | ResponseFitbitDailyActivitySummary
   | ResponseFitbitActivityStep
-  | ResponseFitbitHeartRate;
+  | ResponseFitbitHeartRate
+  | ResponseFitbitSleep;
 
 export interface ResponseFitbitProfile {
   user: FitibitUser;
@@ -45,7 +46,7 @@ export interface ResponseFitbitProfile {
 export interface ResponseFitbitDailyActivitySummary {
   activities: FitbitActivity[];
   goals: FitbitGoals;
-  summary: FitbitSummary;
+  summary: FitbitAcitivitySummary;
 }
 
 export interface ResponseFitbitActivityStep {
@@ -56,6 +57,11 @@ export interface ResponseFitbitActivityStep {
 export interface ResponseFitbitHeartRate {
   'activities-heart': FitbitHeartRate[];
   'activities-heart-intraday': FitbitActivitiesIntraday;
+}
+
+export interface ResponseFitbitSleep {
+  sleep: FitbitSleep[];
+  summary: FitbitSleepSummary;
 }
 
 interface FitbitDataset {
@@ -188,7 +194,7 @@ interface FitbitHeartRateZone {
   name: string;
 }
 
-interface FitbitSummary {
+interface FitbitAcitivitySummary {
   activeScore: number;
   activityCalories: number;
   caloriesBMR: number;
@@ -217,6 +223,63 @@ interface FitbitHeartRate {
     customHeartRateZones: FitbitHeartRateZone[];
     heartRateZones: FitbitHeartRateZone[];
   };
+}
+
+interface FitbitSleepLevelData {
+  dateTime: string;
+  level: string;
+  seconds: number;
+}
+
+interface FitbitSleepLevelSummaryData {
+  count: number;
+  minutes: number;
+  thirtyDayAvgMinutes: number;
+}
+
+interface FitbitSleepLevelSummary {
+  deep: FitbitSleepLevelSummaryData;
+  light: FitbitSleepLevelSummaryData;
+  rem: FitbitSleepLevelSummaryData;
+  wake: FitbitSleepLevelSummaryData;
+}
+
+interface FitbitSleepLevels {
+  data: FitbitSleepLevelData[];
+  shortData: FitbitSleepLevelData[];
+  summary: FitbitSleepLevelSummary;
+}
+
+interface FitbitSleep {
+  dateOfSleep: string;
+  duration: number;
+  efficiency: number;
+  endTime: string;
+  infoCode: number;
+  isMainSleep: boolean;
+  levels: FitbitSleepLevels;
+  logId: number;
+  minutesAfterWakeup: number;
+  minutesAsleep: number;
+  minutesAwake: number;
+  minutesToFallAsleep: number;
+  startTime: string;
+  timeInBed: number;
+  type: string;
+}
+
+interface FitbitSleepSummaryStage {
+  deep: number;
+  light: number;
+  rem: number;
+  wake: number;
+}
+
+interface FitbitSleepSummary {
+  stages: FitbitSleepSummaryStage;
+  totalMinutesAsleep: number;
+  totalSleepRecords: number;
+  totalTimeInBed: number;
 }
 
 export const fitbitAuth = new ClientOAuth2({
