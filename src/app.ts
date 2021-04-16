@@ -144,4 +144,15 @@ app.get('/fitbit/steps', getSteps);
 app.get('/fitbit/heartrate', getHeartRate);
 app.get('/fitbit/sleep', getSleep);
 
+// heartbeat
+app.get(
+  '/wakeup',
+  async (_: Request, res: Response): Promise<Response> => {
+    return res.status(200).json({
+      status: 'success',
+      message: 'working',
+    });
+  }
+);
+
 export default app;
