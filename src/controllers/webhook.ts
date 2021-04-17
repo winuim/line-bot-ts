@@ -19,9 +19,11 @@ import botText from '../config/botText.json';
 import {
   FITBIT_API_ACTIVITY_DAILY,
   FITBIT_API_BASE_URL,
+  FITBIT_API_SLEEP,
   getFitbitToken,
   getFitbitUser,
   ResponseFitbitDailyActivitySummary,
+  ResponseFitbitSleep,
 } from '../lib/fitbitApi';
 
 type BotText = typeof botText;
@@ -203,6 +205,53 @@ export const handleText = (
                     fitbitResponse.summary.restingHeartRate,
                   ', sedentary minutes = ' +
                     fitbitResponse.summary.sedentaryMinutes,
+                ].join('\n')
+              );
+            })
+            .catch(error => {
+              // handle error
+              console.log(error);
+              return replyText(replyToken, error.message);
+            });
+        }
+      });
+    }
+    case 'fitbit sleep': {
+      return getFitbitToken().then(token => {
+        if (typeof token === 'string') {
+          return replyText(replyToken, [
+            'Fitbitデータへのアクセス許可が必要です\n下記URLからFitbitデータへのアクセス許可をお願いします',
+            token,
+          ]);
+        } else {
+          const today = new Date();
+          const formatDate =
+            today.getFullYear() +
+            '-' +
+            ('0' + (today.getMonth() + 1)).slice(-2) +
+            '-' +
+            ('0' + today.getDate()).slice(-2);
+          return axios(
+            token.sign({
+              baseURL: FITBIT_API_BASE_URL,
+              url: FITBIT_API_SLEEP.replace('[date]', formatDate),
+            })
+          )
+            .then(response => {
+              console.log(response.data);
+              const fitbitResponse = response.data as ResponseFitbitSleep;
+              const displayName = getFitbitUser().displayName || 'unknown';
+              return replyText(
+                replyToken,
+                [
+                  displayName + "'s today sleep summary ",
+                  ', totalMinutesAsleep = ' +
+                    fitbitResponse.summary.totalMinutesAsleep,
+                  ', totalTimeInBed = ' + fitbitResponse.summary.totalTimeInBed,
+                  ', stage wake = ' + fitbitResponse.summary.stages.wake,
+                  ', stage rem = ' + fitbitResponse.summary.stages.rem,
+                  ', stage light = ' + fitbitResponse.summary.stages.light,
+                  ', stage deep = ' + fitbitResponse.summary.stages.deep,
                 ].join('\n')
               );
             })
