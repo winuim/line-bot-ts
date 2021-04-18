@@ -39,6 +39,28 @@ export type FitbitResponse =
   | ResponseFitbitHeartRate
   | ResponseFitbitSleep;
 
+const isFitbitDailyActivitySummary = (
+  arg: unknown
+): arg is ResponseFitbitDailyActivitySummary => {
+  return (
+    arg !== null &&
+    typeof arg === 'object' &&
+    typeof (arg as ResponseFitbitDailyActivitySummary).activities ===
+      'object' &&
+    typeof (arg as ResponseFitbitDailyActivitySummary).goals === 'object' &&
+    typeof (arg as ResponseFitbitDailyActivitySummary).summary === 'object'
+  );
+};
+
+const isFitbitSleep = (arg: unknown): arg is ResponseFitbitSleep => {
+  return (
+    arg !== null &&
+    typeof arg === 'object' &&
+    typeof (arg as ResponseFitbitSleep).sleep === 'object' &&
+    typeof (arg as ResponseFitbitSleep).summary === 'object'
+  );
+};
+
 export interface ResponseFitbitProfile {
   user: FitibitUser;
 }
@@ -75,7 +97,7 @@ interface FitbitActivitiesIntraday {
   datasetType: string;
 }
 
-interface FitibitUser {
+export interface FitibitUser {
   age: number;
   ambassador: boolean;
   autoStrideEnabled: boolean;
@@ -330,4 +352,101 @@ export const setFitbitProfile = (response: ResponseFitbitProfile) => {
 
 export const getFitbitUser = () => {
   return fitbitUser;
+};
+
+export const getFitbitAuthText = (_url: string) => {
+  return [
+    'Fitbitデータへのアクセス許可が必要です\n下記URLからFitbitデータへのアクセス許可をお願いします',
+    _url,
+  ];
+};
+
+export const getFitbitAxiosConfig = (
+  token: ClientOAuth2.Token,
+  param: string
+) => {
+  switch (param) {
+    case 'sleep': {
+      return getFitbitSleepUrl(token);
+    }
+    default: {
+      return getFitbitActivityUrl(token);
+    }
+  }
+};
+
+export const getFitbitResponseText = (fitbitResponse: FitbitResponse) => {
+  switch (fitbitResponse) {
+    case isFitbitDailyActivitySummary(fitbitResponse) && fitbitResponse: {
+      return getFitbitDailyActivityText(fitbitResponse);
+    }
+    case isFitbitSleep(fitbitResponse) && fitbitResponse: {
+      return getFitbitSleepText(fitbitResponse);
+    }
+    default: {
+      return 'Unknown Fitbit Response, ' + JSON.stringify(fitbitResponse);
+    }
+  }
+};
+
+const replaceToday = (url_path: string) => {
+  const today = new Date();
+  const formatDate =
+    today.getFullYear() +
+    '-' +
+    ('0' + (today.getMonth() + 1)).slice(-2) +
+    '-' +
+    ('0' + today.getDate()).slice(-2);
+  return url_path.replace('[date]', formatDate);
+};
+
+const getFitbitUserDisplayName = () => {
+  return getFitbitUser().displayName || 'unknown';
+};
+
+const getFitbitActivityUrl = (token: ClientOAuth2.Token) => {
+  const _url = replaceToday(FITBIT_API_ACTIVITY_DAILY);
+  return token.sign({
+    baseURL: FITBIT_API_BASE_URL,
+    url: _url,
+  });
+};
+
+const getFitbitSleepUrl = (token: ClientOAuth2.Token) => {
+  const _url = replaceToday(FITBIT_API_SLEEP);
+  return token.sign({
+    url: _url,
+  });
+};
+
+const getFitbitDailyActivityText = (
+  fitbitResponse: ResponseFitbitDailyActivitySummary
+) => {
+  return [
+    getFitbitUserDisplayName() + "'s today activity summary ",
+    ', sedentary minutes = ' + fitbitResponse.summary.sedentaryMinutes,
+    ', lightly active minutes = ' + fitbitResponse.summary.lightlyActiveMinutes,
+    ', fairly active minutes = ' + fitbitResponse.summary.fairlyActiveMinutes,
+    ', very active minutes = ' + fitbitResponse.summary.veryActiveMinutes,
+    ', calories BMR = ' + fitbitResponse.summary.caloriesBMR,
+    ', calories Out = ' + fitbitResponse.summary.caloriesOut,
+    ', activity calories = ' + fitbitResponse.summary.activityCalories,
+    ', marginal calories = ' + fitbitResponse.summary.marginalCalories,
+    ', elevation = ' + fitbitResponse.summary.elevation,
+    ', floors = ' + fitbitResponse.summary.floors,
+    ', resting heart rate = ' + fitbitResponse.summary.restingHeartRate,
+    ', steps = ' + fitbitResponse.summary.steps,
+  ].join('\n');
+};
+
+const getFitbitSleepText = (fitbitResponse: ResponseFitbitSleep) => {
+  return [
+    getFitbitUserDisplayName() + "'s today sleep summary ",
+    ', total minutes asleep = ' + fitbitResponse.summary.totalMinutesAsleep,
+    ', total time in bed = ' + fitbitResponse.summary.totalTimeInBed,
+    ', stages wake = ' + fitbitResponse.summary.stages.wake,
+    ', stages rem = ' + fitbitResponse.summary.stages.rem,
+    ', stages light = ' + fitbitResponse.summary.stages.light,
+    ', stages deep = ' + fitbitResponse.summary.stages.deep,
+  ].join('\n');
 };
