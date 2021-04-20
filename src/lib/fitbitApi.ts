@@ -1,15 +1,14 @@
 import ClientOAuth2 from 'client-oauth2';
 
-export const FITBIT_API_BASE_URL = 'https://api.fitbit.com/1/user/-/';
-export const FITBIT_API_PROFILE = '/profile.json';
-export const FITBIT_API_ACTIVITY_DAILY = '/activities/date/[date].json';
-export const FITBIT_API_ACTIVITY_TODAY =
-  '/activities/[resource-path]/date/today/1d.json';
-export const FITBIT_API_ACTIVITY_STEP = '/activities/steps/date/today/1d.json';
-export const FITBIT_API_ACTIVITY_HEART_RATE =
-  '/activities/heart/date/today/1d.json';
-export const FITBIT_API_SLEEP =
+const FITBIT_API_BASE_URL = 'https://api.fitbit.com/1/user/-/';
+const FITBIT_API_PROFILE = '/profile.json';
+const FITBIT_API_ACTIVITY_DAILY = '/activities/date/[date].json';
+const FITBIT_API_SLEEP =
   'https://api.fitbit.com/1.2/user/-/sleep/date/[date].json';
+const FITBIT_API_ACTIVITY_STEP = '/activities/steps/date/today/1d.json';
+const FITBIT_API_ACTIVITY_HEART_RATE = '/activities/heart/date/today/1d.json';
+const FITBIT_API_ACTIVITY_TODAY =
+  '/activities/[resource-path]/date/today/1d.json';
 
 type FitbitUnknownType =
   | boolean
@@ -18,11 +17,11 @@ type FitbitUnknownType =
   | FitbitUnknownType[]
   | {[key: string]: FitbitUnknownType};
 
-type FitbitClockTimeDisplayFormat = '12hour' | '24hour';
+export type FitbitClockTimeDisplayFormat = '12hour' | '24hour';
 
-type FitbitGender = 'FEMALE' | 'MALE' | 'NA';
+export type FitbitGender = 'FEMALE' | 'MALE' | 'NA';
 
-type FitbitLocale =
+export type FitbitLocale =
   | 'en_US'
   | 'fr_FR'
   | 'de_DE'
@@ -38,28 +37,6 @@ export type FitbitResponse =
   | ResponseFitbitActivityStep
   | ResponseFitbitHeartRate
   | ResponseFitbitSleep;
-
-const isFitbitDailyActivitySummary = (
-  arg: unknown
-): arg is ResponseFitbitDailyActivitySummary => {
-  return (
-    arg !== null &&
-    typeof arg === 'object' &&
-    typeof (arg as ResponseFitbitDailyActivitySummary).activities ===
-      'object' &&
-    typeof (arg as ResponseFitbitDailyActivitySummary).goals === 'object' &&
-    typeof (arg as ResponseFitbitDailyActivitySummary).summary === 'object'
-  );
-};
-
-const isFitbitSleep = (arg: unknown): arg is ResponseFitbitSleep => {
-  return (
-    arg !== null &&
-    typeof arg === 'object' &&
-    typeof (arg as ResponseFitbitSleep).sleep === 'object' &&
-    typeof (arg as ResponseFitbitSleep).summary === 'object'
-  );
-};
 
 export interface ResponseFitbitProfile {
   user: FitibitUser;
@@ -86,12 +63,12 @@ export interface ResponseFitbitSleep {
   summary: FitbitSleepSummary;
 }
 
-interface FitbitDataset {
+export interface FitbitDataset {
   time: string;
   value: number;
 }
 
-interface FitbitActivitiesIntraday {
+export interface FitbitActivitiesIntraday {
   dataset: FitbitDataset[];
   datasetInterval: number;
   datasetType: string;
@@ -150,7 +127,7 @@ export interface FitibitUser {
   weightUnit: string;
 }
 
-interface FitibitBadges {
+export interface FitibitBadges {
   badgeGradientEndColor: string;
   badgeGradientStartColor: string;
   badgeType: string;
@@ -177,7 +154,7 @@ interface FitibitBadges {
   value: number;
 }
 
-interface FitbitActivity {
+export interface FitbitActivity {
   activityId: number;
   activityParentId: number;
   activityParentName: string;
@@ -195,7 +172,7 @@ interface FitbitActivity {
   steps: number;
 }
 
-interface FitbitGoals {
+export interface FitbitGoals {
   activeMinutes: number;
   caloriesOut: number;
   distance: number;
@@ -203,12 +180,12 @@ interface FitbitGoals {
   steps: number;
 }
 
-interface FitbitDistance {
+export interface FitbitDistance {
   activity: string;
   distance: number;
 }
 
-interface FitbitHeartRateZone {
+export interface FitbitHeartRateZone {
   caloriesOut: number;
   max: number;
   min: number;
@@ -216,7 +193,7 @@ interface FitbitHeartRateZone {
   name: string;
 }
 
-interface FitbitAcitivitySummary {
+export interface FitbitAcitivitySummary {
   activeScore: number;
   activityCalories: number;
   caloriesBMR: number;
@@ -234,12 +211,12 @@ interface FitbitAcitivitySummary {
   veryActiveMinutes: number;
 }
 
-interface FitbitStep {
+export interface FitbitStep {
   dateTime: string;
   value: string;
 }
 
-interface FitbitHeartRate {
+export interface FitbitHeartRate {
   dateTime: string;
   value: {
     customHeartRateZones: FitbitHeartRateZone[];
@@ -247,32 +224,32 @@ interface FitbitHeartRate {
   };
 }
 
-interface FitbitSleepLevelData {
+export interface FitbitSleepLevelData {
   dateTime: string;
   level: string;
   seconds: number;
 }
 
-interface FitbitSleepLevelSummaryData {
+export interface FitbitSleepLevelSummaryData {
   count: number;
   minutes: number;
   thirtyDayAvgMinutes: number;
 }
 
-interface FitbitSleepLevelSummary {
+export interface FitbitSleepLevelSummary {
   deep: FitbitSleepLevelSummaryData;
   light: FitbitSleepLevelSummaryData;
   rem: FitbitSleepLevelSummaryData;
   wake: FitbitSleepLevelSummaryData;
 }
 
-interface FitbitSleepLevels {
+export interface FitbitSleepLevels {
   data: FitbitSleepLevelData[];
   shortData: FitbitSleepLevelData[];
   summary: FitbitSleepLevelSummary;
 }
 
-interface FitbitSleep {
+export interface FitbitSleep {
   dateOfSleep: string;
   duration: number;
   efficiency: number;
@@ -290,103 +267,80 @@ interface FitbitSleep {
   type: string;
 }
 
-interface FitbitSleepSummaryStage {
+export interface FitbitSleepSummaryStage {
   deep: number;
   light: number;
   rem: number;
   wake: number;
 }
 
-interface FitbitSleepSummary {
+export interface FitbitSleepSummary {
   stages: FitbitSleepSummaryStage;
   totalMinutesAsleep: number;
   totalSleepRecords: number;
   totalTimeInBed: number;
 }
 
-export const fitbitAuth = new ClientOAuth2({
-  clientId: process.env.FITBIT_CLIENT_ID,
-  clientSecret: process.env.FIBIT_CLIENT_SECRET,
-  accessTokenUri: 'https://api.fitbit.com/oauth2/token',
-  authorizationUri: 'https://www.fitbit.com/oauth2/authorize',
-  redirectUri: process.env.BASE_URL + '/fitbit/callback',
-  scopes: [
-    'activity',
-    'heartrate',
-    'location',
-    'nutrition',
-    'profile',
-    'settings',
-    'sleep',
-    'social',
-    'weight',
-  ],
-  query: {
-    expires_in: '86400',
-  },
-});
+interface FitbitModel {
+  auth: ClientOAuth2;
+  token?: ClientOAuth2.Token;
+  user?: FitibitUser;
+}
 
-let fitbitToken: ClientOAuth2.Token;
-let fitbitUser: FitibitUser;
+interface FitbitModles {
+  [userId: string]: FitbitModel;
+}
 
-export const setFitbitToken = (token: ClientOAuth2.Token) => {
-  fitbitToken = token;
+const fitbit: FitbitModles = {};
+
+const initFitbit = (userId: string) => {
+  const _model: FitbitModel = {
+    auth: new ClientOAuth2({
+      clientId: process.env.FITBIT_CLIENT_ID,
+      clientSecret: process.env.FIBIT_CLIENT_SECRET,
+      accessTokenUri: 'https://api.fitbit.com/oauth2/token',
+      authorizationUri: 'https://www.fitbit.com/oauth2/authorize',
+      redirectUri: process.env.BASE_URL + '/fitbit/callback',
+      scopes: [
+        'activity',
+        'heartrate',
+        'location',
+        'nutrition',
+        'profile',
+        'settings',
+        'sleep',
+        'social',
+        'weight',
+      ],
+      query: {
+        expires_in: '86400',
+      },
+    }),
+  };
+  fitbit[userId] = _model;
+  return _model;
 };
 
-export const getFitbitToken = async () => {
-  if (fitbitToken === undefined) {
-    return fitbitAuth.code.getUri();
-  } else {
-    if (fitbitToken.expired()) {
-      fitbitToken = await fitbitToken.refresh().then(updatedToken => {
-        return updatedToken;
-      });
-    }
-    return fitbitToken;
-  }
+const isFitbitDailyActivitySummary = (
+  arg: unknown
+): arg is ResponseFitbitDailyActivitySummary => {
+  return (
+    arg !== null &&
+    typeof arg === 'object' &&
+    typeof (arg as ResponseFitbitDailyActivitySummary).activities ===
+      'object' &&
+    typeof (arg as ResponseFitbitDailyActivitySummary).goals === 'object' &&
+    typeof (arg as ResponseFitbitDailyActivitySummary).summary === 'object'
+  );
 };
 
-export const setFitbitProfile = (response: ResponseFitbitProfile) => {
-  fitbitUser = response.user;
-};
-
-export const getFitbitUser = () => {
-  return fitbitUser;
-};
-
-export const getFitbitAuthText = (_url: string) => {
-  return [
-    'Fitbitデータへのアクセス許可が必要です\n下記URLからFitbitデータへのアクセス許可をお願いします',
-    _url,
-  ];
-};
-
-export const getFitbitAxiosConfig = (
-  token: ClientOAuth2.Token,
-  param: string
-) => {
-  switch (param) {
-    case 'sleep': {
-      return getFitbitSleepUrl(token);
-    }
-    default: {
-      return getFitbitActivityUrl(token);
-    }
-  }
-};
-
-export const getFitbitResponseText = (fitbitResponse: FitbitResponse) => {
-  switch (fitbitResponse) {
-    case isFitbitDailyActivitySummary(fitbitResponse) && fitbitResponse: {
-      return getFitbitDailyActivityText(fitbitResponse);
-    }
-    case isFitbitSleep(fitbitResponse) && fitbitResponse: {
-      return getFitbitSleepText(fitbitResponse);
-    }
-    default: {
-      return 'Unknown Fitbit Response, ' + JSON.stringify(fitbitResponse);
-    }
-  }
+const isFitbitSleep = (arg: unknown): arg is ResponseFitbitSleep => {
+  return (
+    arg !== null &&
+    typeof arg === 'object' &&
+    typeof (arg as ResponseFitbitSleep).sleep === 'object' &&
+    typeof (arg as ResponseFitbitSleep).summary === 'object'
+  );
 };
 
 const replaceToday = (url_path: string) => {
@@ -401,7 +355,15 @@ const replaceToday = (url_path: string) => {
 };
 
 const getFitbitUserDisplayName = () => {
-  return getFitbitUser().displayName || 'unknown';
+  const _user = getFitbitUser();
+  return _user?.displayName || 'unknown';
+};
+
+const getFitbitProfileUrl = (token: ClientOAuth2.Token) => {
+  return token.sign({
+    baseURL: FITBIT_API_BASE_URL,
+    url: FITBIT_API_PROFILE,
+  });
 };
 
 const getFitbitActivityUrl = (token: ClientOAuth2.Token) => {
@@ -412,10 +374,24 @@ const getFitbitActivityUrl = (token: ClientOAuth2.Token) => {
   });
 };
 
+const getFitbitHeartRateUrl = (token: ClientOAuth2.Token) => {
+  return token.sign({
+    baseURL: FITBIT_API_BASE_URL,
+    url: FITBIT_API_ACTIVITY_HEART_RATE,
+  });
+};
+
 const getFitbitSleepUrl = (token: ClientOAuth2.Token) => {
   const _url = replaceToday(FITBIT_API_SLEEP);
   return token.sign({
     url: _url,
+  });
+};
+
+const getFitbitStepUrl = (token: ClientOAuth2.Token) => {
+  return token.sign({
+    baseURL: FITBIT_API_BASE_URL,
+    url: FITBIT_API_ACTIVITY_STEP,
   });
 };
 
@@ -449,4 +425,97 @@ const getFitbitSleepText = (fitbitResponse: ResponseFitbitSleep) => {
     ', stages light = ' + fitbitResponse.summary.stages.light,
     ', stages deep = ' + fitbitResponse.summary.stages.deep,
   ].join('\n');
+};
+
+export const getFitbitAuth = (userId?: string) => {
+  const _userId: string = userId ?? '';
+  let _userModel: FitbitModel = fitbit[_userId];
+  if (_userModel === undefined) {
+    _userModel = initFitbit(_userId);
+  }
+  return _userModel.auth;
+};
+
+export const getFitbitToken = async (userId?: string) => {
+  const _userId: string = userId ?? '';
+  let _userModel: FitbitModel = fitbit[_userId];
+  if (_userModel === undefined) {
+    _userModel = initFitbit(_userId);
+  }
+  if (_userModel.token) {
+    if (_userModel.token.expired()) {
+      const _updateToken = await _userModel.token
+        .refresh()
+        .then(updateToken => {
+          setFitbitToken(updateToken, _userId);
+          return updateToken;
+        });
+      return _updateToken;
+    }
+    return _userModel.token;
+  } else {
+    return _userModel.auth.code.getUri();
+  }
+};
+
+export const setFitbitToken = (token: ClientOAuth2.Token, userId?: string) => {
+  const _userId: string = userId ?? '';
+  fitbit[_userId].token = token;
+};
+
+export const setFitbitProfile = (
+  response: ResponseFitbitProfile,
+  userId?: string
+) => {
+  const _userId: string = userId ?? '';
+  fitbit[_userId].user = response.user;
+};
+
+export const getFitbitUser = (userId?: string) => {
+  const _userId: string = userId ?? '';
+  return fitbit[_userId].user;
+};
+
+export const getFitbitAuthText = (_url: string) => {
+  return [
+    'Fitbitデータへのアクセス許可が必要です\n下記URLからFitbitデータへのアクセス許可をお願いします',
+    _url,
+  ];
+};
+
+export const getFitbitAxiosConfig = (
+  token: ClientOAuth2.Token,
+  param: string
+) => {
+  switch (param) {
+    case 'heartrate': {
+      return getFitbitHeartRateUrl(token);
+    }
+    case 'profile': {
+      return getFitbitProfileUrl(token);
+    }
+    case 'sleep': {
+      return getFitbitSleepUrl(token);
+    }
+    case 'step': {
+      return getFitbitStepUrl(token);
+    }
+    default: {
+      return getFitbitActivityUrl(token);
+    }
+  }
+};
+
+export const getFitbitResponseText = (fitbitResponse: FitbitResponse) => {
+  switch (fitbitResponse) {
+    case isFitbitDailyActivitySummary(fitbitResponse) && fitbitResponse: {
+      return getFitbitDailyActivityText(fitbitResponse);
+    }
+    case isFitbitSleep(fitbitResponse) && fitbitResponse: {
+      return getFitbitSleepText(fitbitResponse);
+    }
+    default: {
+      return 'Fitbit Response, ' + JSON.stringify(fitbitResponse);
+    }
+  }
 };

@@ -1,32 +1,17 @@
 import {Request, Response} from 'express';
 import axios from 'axios';
 import {
-  fitbitAuth,
-  FITBIT_API_ACTIVITY_DAILY,
-  FITBIT_API_ACTIVITY_HEART_RATE,
-  FITBIT_API_ACTIVITY_STEP,
-  FITBIT_API_BASE_URL,
-  FITBIT_API_PROFILE,
-  FITBIT_API_SLEEP,
+  getFitbitAuth,
+  getFitbitAxiosConfig,
   getFitbitToken,
   ResponseFitbitProfile,
   setFitbitProfile,
   setFitbitToken,
 } from '../lib/fitbitApi';
 
-const replaceToday = (url_path: string) => {
-  const today = new Date();
-  const formatDate =
-    today.getFullYear() +
-    '-' +
-    ('0' + (today.getMonth() + 1)).slice(-2) +
-    '-' +
-    ('0' + today.getDate()).slice(-2);
-  return url_path.replace('[date]', formatDate);
-};
-
 export const initAuth = async (req: Request, res: Response) => {
-  const uri = fitbitAuth.code.getUri();
+  const _fitbitAuth = getFitbitAuth();
+  const uri = _fitbitAuth.code.getUri();
   res.redirect(uri);
 };
 
@@ -34,17 +19,15 @@ export const authCallback = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  return fitbitAuth.code
+  console.log(req.path);
+  const _fitbitAuth = getFitbitAuth();
+  return _fitbitAuth.code
     .getToken(req.originalUrl)
     .then(token => {
       console.log(token);
       setFitbitToken(token);
-      return axios(
-        token.sign({
-          baseURL: FITBIT_API_BASE_URL,
-          url: FITBIT_API_PROFILE,
-        })
-      )
+      const _axiosConfig = getFitbitAxiosConfig(token, 'profile');
+      return axios(_axiosConfig)
         .then(response => {
           // handle success
           console.log(response.data);
@@ -91,13 +74,8 @@ export const getProfile = async (
   if (typeof token === 'string') {
     return res.redirect(token);
   }
-
-  return axios(
-    token.sign({
-      baseURL: FITBIT_API_BASE_URL,
-      url: FITBIT_API_PROFILE,
-    })
-  )
+  const _axiosConfig = getFitbitAxiosConfig(token, 'profile');
+  return axios(_axiosConfig)
     .then(response => {
       // handle success
       console.log(response.data);
@@ -119,15 +97,8 @@ export const getActivity = async (
   if (typeof token === 'string') {
     return res.redirect(token);
   }
-
-  const _url = replaceToday(FITBIT_API_ACTIVITY_DAILY);
-  console.log(_url);
-  return axios(
-    token.sign({
-      baseURL: FITBIT_API_BASE_URL,
-      url: _url,
-    })
-  )
+  const _axiosConfig = getFitbitAxiosConfig(token, 'activity');
+  return axios(_axiosConfig)
     .then(response => {
       // handle success
       console.log(response.data);
@@ -148,15 +119,8 @@ export const getSteps = async (
   if (typeof token === 'string') {
     return res.redirect(token);
   }
-
-  const _url = FITBIT_API_ACTIVITY_STEP;
-  console.log(_url);
-  return axios(
-    token.sign({
-      baseURL: FITBIT_API_BASE_URL,
-      url: _url,
-    })
-  )
+  const _axiosConfig = getFitbitAxiosConfig(token, 'step');
+  return axios(_axiosConfig)
     .then(response => {
       // handle success
       console.log(response.data);
@@ -177,15 +141,8 @@ export const getHeartRate = async (
   if (typeof token === 'string') {
     return res.redirect(token);
   }
-
-  const _url = FITBIT_API_ACTIVITY_HEART_RATE;
-  console.log(_url);
-  return axios(
-    token.sign({
-      baseURL: FITBIT_API_BASE_URL,
-      url: _url,
-    })
-  )
+  const _axiosConfig = getFitbitAxiosConfig(token, 'heartrate');
+  return axios(_axiosConfig)
     .then(response => {
       // handle success
       console.log(response.data);
@@ -206,14 +163,8 @@ export const getSleep = async (
   if (typeof token === 'string') {
     return res.redirect(token);
   }
-
-  const _url = replaceToday(FITBIT_API_SLEEP);
-  console.log(_url);
-  return axios(
-    token.sign({
-      url: _url,
-    })
-  )
+  const _axiosConfig = getFitbitAxiosConfig(token, 'sleep');
+  return axios(_axiosConfig)
     .then(response => {
       // handle success
       console.log(response.data);
