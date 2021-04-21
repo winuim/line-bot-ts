@@ -59,9 +59,11 @@
     "@line/bot-sdk": "^7.2.0",
     "axios": "^0.21.1",
     "client-oauth2": "^4.3.3",
+    "csrf": "^3.1.0",
     "dotenv": "^8.2.0",
     "errorhandler": "^1.5.1",
     "express": "^4.17.1",
+    "express-session": "^1.17.1",
     "morgan": "^1.10.0",
     "morgan-body": "^2.6.5"
   },
