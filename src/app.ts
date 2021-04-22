@@ -15,6 +15,8 @@ import express, {
 } from 'express';
 import morgan from 'morgan';
 import path from 'path';
+import session from 'express-session';
+import csrf from 'csrf';
 
 import {
   authCallback,
@@ -38,9 +40,26 @@ const PORT = process.env.PORT || 3000;
 // Create a new Express application.
 const app: Application = express();
 
+// CSRF token
+export const tokens = new csrf();
+
 // Express configuration
 app.set('port', PORT);
 app.use(morgan('combined'));
+
+// session
+app.use(
+  session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      httpOnly: true,
+      maxAge: 5 * 60 * 1000,
+      secure: true,
+    },
+  })
+);
 
 // serve static files
 app.use(express.static(path.join(__dirname, 'public'), {maxAge: 31557600000}));
