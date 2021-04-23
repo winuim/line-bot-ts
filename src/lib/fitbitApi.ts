@@ -291,31 +291,86 @@ interface FitbitModles {
   [userId: string]: FitbitModel;
 }
 
+const defaultOAuthOptions: ClientOAuth2.Options = {
+  clientId: process.env.FITBIT_CLIENT_ID,
+  clientSecret: process.env.FIBIT_CLIENT_SECRET,
+  accessTokenUri: 'https://api.fitbit.com/oauth2/token',
+  authorizationUri: 'https://www.fitbit.com/oauth2/authorize',
+  redirectUri: process.env.BASE_URL + '/fitbit/callback',
+  scopes: [
+    'activity',
+    'heartrate',
+    'location',
+    'nutrition',
+    'profile',
+    'settings',
+    'sleep',
+    'social',
+    'weight',
+  ],
+};
+
+export interface FitbitOptionModel {
+  redirectUri: string;
+  scopes: string[];
+  state: string;
+  expires_in: number;
+}
+export interface IFitbit {
+  authorizeURL(): string;
+  authorizeCallback(originalUrl: string): Promise<ClientOAuth2.Token>;
+  setToken(token: ClientOAuth2.Token): void;
+  getToken(): ClientOAuth2.Token;
+}
+
+export class Fitbit implements IFitbit {
+  private _config: ClientOAuth2.Options = defaultOAuthOptions;
+  private _auth: ClientOAuth2;
+  private _expires_in = 86400;
+  private _token!: ClientOAuth2.Token;
+
+  constructor(private opt?: Partial<FitbitOptionModel>) {
+    if (opt) {
+      this._config.redirectUri =
+        opt.redirectUri || defaultOAuthOptions.redirectUri;
+      this._config.scopes = opt.scopes || defaultOAuthOptions.scopes;
+      this._config.state = opt.state || undefined;
+      this._expires_in = opt.expires_in || this._expires_in;
+    }
+    console.log(this._config);
+    this._auth = new ClientOAuth2(this._config);
+  }
+  authorizeURL(): string {
+    const _url = this._auth.code.getUri();
+    console.log(_url);
+    return _url;
+  }
+  authorizeCallback(originalUrl: string): Promise<ClientOAuth2.Token> {
+    console.log(originalUrl);
+    return this._auth.code.getToken(originalUrl).then(token => {
+      console.log(token);
+      token.expiresIn(this._expires_in);
+      return token.refresh().then(updatedToken => {
+        console.log(updatedToken !== token);
+        console.log(updatedToken.accessToken);
+        this.setToken(updatedToken);
+        return updatedToken;
+      });
+    });
+  }
+  setToken(token: ClientOAuth2.Token): void {
+    this._token = token;
+  }
+  getToken(): ClientOAuth2.Token {
+    return this._token;
+  }
+}
+
 const fitbit: FitbitModles = {};
 
 const initFitbit = (userId: string) => {
   const _model: FitbitModel = {
-    auth: new ClientOAuth2({
-      clientId: process.env.FITBIT_CLIENT_ID,
-      clientSecret: process.env.FIBIT_CLIENT_SECRET,
-      accessTokenUri: 'https://api.fitbit.com/oauth2/token',
-      authorizationUri: 'https://www.fitbit.com/oauth2/authorize',
-      redirectUri: process.env.BASE_URL + '/fitbit/callback',
-      scopes: [
-        'activity',
-        'heartrate',
-        'location',
-        'nutrition',
-        'profile',
-        'settings',
-        'sleep',
-        'social',
-        'weight',
-      ],
-      query: {
-        expires_in: '86400',
-      },
-    }),
+    auth: new ClientOAuth2(defaultOAuthOptions),
   };
   fitbit[userId] = _model;
   return _model;
