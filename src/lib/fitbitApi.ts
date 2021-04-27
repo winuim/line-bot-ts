@@ -308,6 +308,9 @@ const defaultOAuthOptions: ClientOAuth2.Options = {
     'social',
     'weight',
   ],
+  query: {
+    expires_in: '86400',
+  },
 };
 
 export interface FitbitOptionModel {
@@ -342,21 +345,38 @@ export class Fitbit implements IFitbit {
   }
   authorizeURL(): string {
     const _url = this._auth.code.getUri();
-    console.log(_url);
+    console.log('authorizeURL = ' + _url);
     return _url;
   }
   authorizeCallback(originalUrl: string): Promise<ClientOAuth2.Token> {
-    console.log(originalUrl);
-    return this._auth.code.getToken(originalUrl).then(token => {
-      console.log(token);
-      token.expiresIn(this._expires_in);
-      return token.refresh().then(updatedToken => {
-        console.log(updatedToken !== token);
-        console.log(updatedToken.accessToken);
-        this.setToken(updatedToken);
-        return updatedToken;
+    console.log('authorizeCallback = ' + originalUrl);
+    return this._auth.code
+      .getToken(originalUrl)
+      .then(token => {
+        console.log('authorizeCallback success');
+        console.log(token);
+        return token;
+      })
+      .catch(error => {
+        console.log('authorizeCallback error');
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          // The request was made but no response was received
+          // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+          // http.ClientRequest in node.js
+          console.log(error.request);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
+        return error.message;
       });
-    });
   }
   setToken(token: ClientOAuth2.Token): void {
     this._token = token;

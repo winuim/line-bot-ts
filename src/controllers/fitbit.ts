@@ -1,17 +1,15 @@
 import {Request, Response} from 'express';
 import axios from 'axios';
 import {
-  getFitbitAuth,
+  Fitbit,
   getFitbitAxiosConfig,
   getFitbitToken,
   ResponseFitbitProfile,
-  setFitbitProfile,
-  setFitbitToken,
 } from '../lib/fitbitApi';
 
 export const initAuth = async (req: Request, res: Response) => {
-  const _fitbitAuth = getFitbitAuth();
-  const uri = _fitbitAuth.code.getUri();
+  const fitbit = new Fitbit();
+  const uri = fitbit.authorizeURL();
   res.redirect(uri);
 };
 
@@ -19,51 +17,16 @@ export const authCallback = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  console.log(req.path);
-  const _fitbitAuth = getFitbitAuth();
-  return _fitbitAuth.code
-    .getToken(req.originalUrl)
-    .then(token => {
-      console.log(token);
-      setFitbitToken(token);
-      const _axiosConfig = getFitbitAxiosConfig(token, 'profile');
-      return axios(_axiosConfig)
-        .then(response => {
-          // handle success
-          console.log(response.data);
-          const profile = response.data as ResponseFitbitProfile;
-          setFitbitProfile(profile);
-          return res.status(200).json({
-            status: 'success',
-            message: 'Authorized successfully!',
-            displayName: profile.user.displayName,
-          });
-        })
-        .catch(error => {
-          // handle error
-          console.log(error);
-          return res.status(error.response.status).send(error.message);
-        });
-    })
-    .catch(error => {
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
-      } else if (error.request) {
-        // The request was made but no response was received
-        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-        // http.ClientRequest in node.js
-        console.log(error.request);
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log('Error', error.message);
-      }
-      console.log(error.config);
-      return res.status(error.response.status).send(error.message);
+  console.log(req.query);
+  const fitbit = new Fitbit();
+  return fitbit.authorizeCallback(req.originalUrl).then(token => {
+    console.log(token);
+    return res.status(200).json({
+      status: 'success',
+      message: 'Authorized successfully!',
+      accessToken: token.accessToken,
     });
+  });
 };
 
 export const getProfile = async (

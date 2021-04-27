@@ -8,4 +8,12 @@ declare global {
   }
 }
 
+declare module 'express-session' {
+  interface SessionData {
+    _csrf: string;
+    _fitbitToken: ClientOAuth2.Token;
+    _fitbitProfile: ResponseFitbitProfile;
+  }
+}
+
 export {};
