@@ -19,8 +19,8 @@ import botText from '../config/botText.json';
 import {
   getFitbitAxiosConfig,
   getFitbitAuthText,
-  getFitbitToken,
   getFitbitResponseText,
+  getFitbitToken,
 } from '../lib/fitbitApi';
 
 type BotText = typeof botText;

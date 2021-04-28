@@ -10,8 +10,9 @@ declare global {
 
 declare module 'express-session' {
   interface SessionData {
+    views: number;
     _csrf: string;
-    _fitbitToken: ClientOAuth2.Token;
+    _fitbitData: string;
     _fitbitProfile: ResponseFitbitProfile;
   }
 }

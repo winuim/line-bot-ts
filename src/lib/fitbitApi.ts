@@ -317,29 +317,23 @@ export interface FitbitOptionModel {
   redirectUri: string;
   scopes: string[];
   state: string;
-  expires_in: number;
+  expires_in: string;
 }
 export interface IFitbit {
   authorizeURL(): string;
   authorizeCallback(originalUrl: string): Promise<ClientOAuth2.Token>;
-  setToken(token: ClientOAuth2.Token): void;
-  getToken(): ClientOAuth2.Token;
+  createToken(data: string): ClientOAuth2.Token;
 }
 
 export class Fitbit implements IFitbit {
-  private _config: ClientOAuth2.Options = defaultOAuthOptions;
+  private _config: ClientOAuth2.Options;
   private _auth: ClientOAuth2;
-  private _expires_in = 86400;
-  private _token!: ClientOAuth2.Token;
 
   constructor(private opt?: Partial<FitbitOptionModel>) {
-    if (opt) {
-      this._config.redirectUri =
-        opt.redirectUri || defaultOAuthOptions.redirectUri;
-      this._config.scopes = opt.scopes || defaultOAuthOptions.scopes;
-      this._config.state = opt.state || undefined;
-      this._expires_in = opt.expires_in || this._expires_in;
-    }
+    this._config = Object.assign(defaultOAuthOptions, opt);
+    this._config.query = {
+      expires_in: opt?.expires_in || '86400',
+    };
     console.log(this._config);
     this._auth = new ClientOAuth2(this._config);
   }
@@ -378,11 +372,9 @@ export class Fitbit implements IFitbit {
         return error.message;
       });
   }
-  setToken(token: ClientOAuth2.Token): void {
-    this._token = token;
-  }
-  getToken(): ClientOAuth2.Token {
-    return this._token;
+  createToken(data: string): ClientOAuth2.Token {
+    const _fitbitData = JSON.parse(data) as ClientOAuth2.Data;
+    return this._auth.createToken(_fitbitData);
   }
 }
 

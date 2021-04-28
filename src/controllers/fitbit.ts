@@ -21,6 +21,8 @@ export const authCallback = async (
   const fitbit = new Fitbit();
   return fitbit.authorizeCallback(req.originalUrl).then(token => {
     console.log(token);
+    req.session._fitbitData = JSON.stringify(token.data);
+    console.log(req.session._fitbitData);
     return res.status(200).json({
       status: 'success',
       message: 'Authorized successfully!',
@@ -33,23 +35,28 @@ export const getProfile = async (
   req: Request,
   res: Response
 ): Promise<Response | void> => {
-  const token = await getFitbitToken();
-  if (typeof token === 'string') {
-    return res.redirect(token);
+  const fitbit = new Fitbit();
+  console.log(req.session._fitbitData);
+  if (req.session._fitbitData) {
+    const token = fitbit.createToken(req.session._fitbitData);
+    console.log(token);
+    const _axiosConfig = getFitbitAxiosConfig(token, 'profile');
+    return axios(_axiosConfig)
+      .then(response => {
+        // handle success
+        console.log(response.data);
+        const profile = response.data as ResponseFitbitProfile;
+        return res.status(200).json(profile.user);
+      })
+      .catch(error => {
+        // handle error
+        console.log(error);
+        return res.status(400).json(error);
+      });
+  } else {
+    const uri = fitbit.authorizeURL();
+    res.redirect(uri);
   }
-  const _axiosConfig = getFitbitAxiosConfig(token, 'profile');
-  return axios(_axiosConfig)
-    .then(response => {
-      // handle success
-      console.log(response.data);
-      const profile = response.data as ResponseFitbitProfile;
-      return res.status(200).json(profile.user);
-    })
-    .catch(error => {
-      // handle error
-      console.log(error);
-      return res.status(400).json(error);
-    });
 };
 
 export const getActivity = async (

@@ -17,6 +17,7 @@ import morgan from 'morgan';
 import path from 'path';
 import session from 'express-session';
 import csrf from 'csrf';
+import {v4 as genuuid} from 'uuid';
 
 import {
   authCallback,
@@ -47,20 +48,6 @@ export const tokens = new csrf();
 app.set('port', PORT);
 app.use(morgan('combined'));
 
-// session
-app.use(
-  session({
-    secret: 'keyboard cat',
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      httpOnly: true,
-      maxAge: 5 * 60 * 1000,
-      secure: true,
-    },
-  })
-);
-
 // serve static files
 app.use(express.static(path.join(__dirname, 'public'), {maxAge: 31557600000}));
 
@@ -83,17 +70,45 @@ app.use(
   }
 );
 
+// session configuration
+const sess: session.SessionOptions = {
+  genid: function (req) {
+    return genuuid();
+  },
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000,
+  },
+};
+// server secure
+if (app.get('env') === 'production') {
+  app.set('trust proxy', 1); // trust first proxy
+  sess.cookie = sess.cookie || {};
+  sess.cookie.secure = true; // serve secure cookies
+}
+
+// Use the session middleware
+app.use(session(sess));
+
 // Route handler to receive webhook events.
 // This route is used to receive connection tests.
-app.get(
-  '/',
-  async (_: Request, res: Response): Promise<Response> => {
-    return res.status(200).json({
-      status: 'success',
-      message: 'Connected successfully!',
-    });
+// Access the session as req.session
+app.get('/', (req, res, next) => {
+  if (req.session.views) {
+    req.session.views++;
+    res.setHeader('Content-Type', 'text/html');
+    res.write('<p>views: ' + req.session.views + '</p>');
+    if (req.session.cookie.maxAge) {
+      res.write('<p>expires in: ' + req.session.cookie.maxAge / 1000 + 's</p>');
+    }
+    res.end();
+  } else {
+    req.session.views = 1;
+    res.end('welcome to the session demo. refresh!');
   }
-);
+});
 
 // heartbeat
 app.get(
