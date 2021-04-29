@@ -13,10 +13,10 @@ import express, {
   Request,
   Response,
 } from 'express';
+import csrf from 'csrf';
 import morgan from 'morgan';
 import path from 'path';
 import session from 'express-session';
-import csrf from 'csrf';
 import {v4 as genuuid} from 'uuid';
 
 import {
@@ -177,16 +177,5 @@ app.get('/fitbit/activity', getActivity);
 app.get('/fitbit/steps', getSteps);
 app.get('/fitbit/heartrate', getHeartRate);
 app.get('/fitbit/sleep', getSleep);
-
-// heartbeat
-app.get(
-  '/wakeup',
-  async (_: Request, res: Response): Promise<Response> => {
-    return res.status(200).json({
-      status: 'success',
-      message: 'working',
-    });
-  }
-);
 
 export default app;
