@@ -13,21 +13,13 @@ import express, {
   Request,
   Response,
 } from 'express';
-import csrf from 'csrf';
 import morgan from 'morgan';
+import passport from 'passport';
 import path from 'path';
 import session from 'express-session';
+import OAuth2Strategy from 'passport-oauth2';
 import {v4 as genuuid} from 'uuid';
 
-import {
-  authCallback,
-  getActivity,
-  getHeartRate,
-  getProfile,
-  getSleep,
-  getSteps,
-  initAuth,
-} from './controllers/fitbit';
 import {handleEvent} from './controllers/webhook';
 
 // Setup Express configurations.
@@ -40,9 +32,6 @@ const PORT = process.env.PORT || 3000;
 
 // Create a new Express application.
 const app: Application = express();
-
-// CSRF token
-export const tokens = new csrf();
 
 // Express configuration
 app.set('port', PORT);
@@ -91,6 +80,76 @@ if (app.get('env') === 'production') {
 
 // Use the session middleware
 app.use(session(sess));
+
+// passport configuration
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(
+  'fitbit',
+  new OAuth2Strategy(
+    {
+      authorizationURL: 'https://www.fitbit.com/oauth2/authorize',
+      tokenURL: 'https://api.fitbit.com/oauth2/token',
+      clientID: process.env.FITBIT_CLIENT_ID || '',
+      clientSecret: process.env.FIBIT_CLIENT_SECRET || '',
+      callbackURL: process.env.BASE_URL + '/fitbit/callback',
+      scope: [
+        'activity',
+        'heartrate',
+        'location',
+        'nutrition',
+        'profile',
+        'settings',
+        'sleep',
+        'social',
+        'weight',
+      ],
+    },
+    (
+      accessToken: string,
+      refreshToken: string,
+      profile: any,
+      done: OAuth2Strategy.VerifyCallback
+    ) => {
+      console.log(accessToken);
+      console.log(refreshToken);
+      console.log(profile);
+      done(null, {
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        profile: profile,
+      });
+    }
+  )
+);
+// passport routing
+app.get('/fitbit/auth', passport.authenticate('fitbit'));
+app.get(
+  '/fitbit/callback',
+  passport.authenticate('fitbit', {
+    successRedirect: '/fitbit/success',
+    failureRedirect: '/fitbit/failure',
+  })
+);
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+passport.deserializeUser((obj, done) => {
+  if (
+    obj === false ||
+    obj === null ||
+    obj === undefined ||
+    typeof obj === 'object'
+  ) {
+    done(null, obj);
+  }
+});
+app.get('/fitbit/success', (req, res, next) => {
+  res.send(req.user);
+});
+app.get('/fitbit/failure', (req, res, next) => {
+  res.send(res.statusMessage);
+});
 
 // Route handler to receive webhook events.
 // This route is used to receive connection tests.
@@ -168,14 +227,5 @@ app.post(
     });
   }
 );
-
-// fitbit auth callback
-app.get('/fitbit/auth', initAuth);
-app.get('/fitbit/callback', authCallback);
-app.get('/fitbit/profile', getProfile);
-app.get('/fitbit/activity', getActivity);
-app.get('/fitbit/steps', getSteps);
-app.get('/fitbit/heartrate', getHeartRate);
-app.get('/fitbit/sleep', getSleep);
 
 export default app;
