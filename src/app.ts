@@ -17,6 +17,7 @@ import morgan from 'morgan';
 import passport from 'passport';
 import path from 'path';
 import session from 'express-session';
+import FitbitOAuth2Strategy from 'passport-fitbit-oauth2';
 import OAuth2Strategy from 'passport-oauth2';
 import {v4 as genuuid} from 'uuid';
 
@@ -86,7 +87,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 passport.use(
   'fitbit',
-  new OAuth2Strategy(
+  new FitbitOAuth2Strategy(
     {
       authorizationURL: 'https://www.fitbit.com/oauth2/authorize',
       tokenURL: 'https://api.fitbit.com/oauth2/token',
