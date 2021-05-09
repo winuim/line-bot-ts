@@ -1,7 +1,5 @@
 declare module 'passport-fitbit-oauth2' {
   import {Request} from 'express';
-  import {Strategy} from 'passport';
-  import {OAuth2} from 'oauth';
   import OAuth2Strategy from 'passport-oauth2';
 
   declare class FitbitOAuth2Strategy extends OAuth2Strategy {

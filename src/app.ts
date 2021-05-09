@@ -85,44 +85,40 @@ app.use(session(sess));
 // passport configuration
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(
-  'fitbit',
-  new FitbitOAuth2.FitbitOAuth2Strategy(
-    {
-      authorizationURL: 'https://www.fitbit.com/oauth2/authorize',
-      tokenURL: 'https://api.fitbit.com/oauth2/token',
-      clientID: process.env.FITBIT_CLIENT_ID || '',
-      clientSecret: process.env.FIBIT_CLIENT_SECRET || '',
-      callbackURL: process.env.BASE_URL + '/fitbit/callback',
-      scope: [
-        'activity',
-        'heartrate',
-        'location',
-        'nutrition',
-        'profile',
-        'settings',
-        'sleep',
-        'social',
-        'weight',
-      ],
-    },
-    (
-      accessToken: string,
-      refreshToken: string,
-      profile: any,
-      done: OAuth2Strategy.VerifyCallback
-    ) => {
-      console.log(accessToken);
-      console.log(refreshToken);
-      console.log(profile);
-      done(null, {
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        profile: profile,
-      });
-    }
-  )
+
+const strategy = new FitbitOAuth2.FitbitOAuth2Strategy(
+  {
+    authorizationURL: 'https://www.fitbit.com/oauth2/authorize',
+    tokenURL: 'https://api.fitbit.com/oauth2/token',
+    clientID: process.env.FITBIT_CLIENT_ID || '',
+    clientSecret: process.env.FIBIT_CLIENT_SECRET || '',
+    callbackURL: process.env.BASE_URL + '/fitbit/callback',
+    scope: [
+      'activity',
+      'heartrate',
+      'location',
+      'nutrition',
+      'profile',
+      'settings',
+      'sleep',
+      'social',
+      'weight',
+    ],
+  },
+  (
+    accessToken: string,
+    refreshToken: string,
+    profile: any,
+    done: OAuth2Strategy.VerifyCallback
+  ) => {
+    console.log(accessToken);
+    console.log(refreshToken);
+    console.log(profile);
+    return done(null, profile);
+  }
 );
+
+passport.use('fitbit', strategy);
 // passport routing
 app.get('/fitbit/auth', passport.authenticate('fitbit'));
 app.get(
@@ -133,9 +129,11 @@ app.get(
   })
 );
 passport.serializeUser((user, done) => {
+  console.log('serializeUser');
   done(null, user);
 });
 passport.deserializeUser((obj, done) => {
+  console.log('deserializeUser');
   if (
     obj === false ||
     obj === null ||
@@ -146,9 +144,11 @@ passport.deserializeUser((obj, done) => {
   }
 });
 app.get('/fitbit/success', (req, res, next) => {
+  console.log('/fitbit/success');
   res.send(req.user);
 });
 app.get('/fitbit/failure', (req, res, next) => {
+  console.log('/fitbit/failure');
   res.send(res.statusMessage);
 });
 
