@@ -92,7 +92,7 @@ const strategy = new FitbitOAuth2.FitbitOAuth2Strategy(
     tokenURL: 'https://api.fitbit.com/oauth2/token',
     clientID: process.env.FITBIT_CLIENT_ID || '',
     clientSecret: process.env.FIBIT_CLIENT_SECRET || '',
-    callbackURL: process.env.BASE_URL + '/fitbit/callback',
+    callbackURL: process.env.BASE_URL + '/auth/fitbit/callback',
     scope: [
       'activity',
       'heartrate',
@@ -120,12 +120,12 @@ const strategy = new FitbitOAuth2.FitbitOAuth2Strategy(
 
 passport.use('fitbit', strategy);
 // passport routing
-app.get('/fitbit/auth', passport.authenticate('fitbit'));
+app.get('/auth/fitbit', passport.authenticate('fitbit'));
 app.get(
-  '/fitbit/callback',
+  '/auth/fitbit/callback',
   passport.authenticate('fitbit', {
-    successRedirect: '/fitbit/success',
-    failureRedirect: '/fitbit/failure',
+    successRedirect: '/auth/fitbit/success',
+    failureRedirect: '/auth/fitbit/failure',
   })
 );
 passport.serializeUser((user, done) => {
@@ -143,12 +143,12 @@ passport.deserializeUser((obj, done) => {
     done(null, obj);
   }
 });
-app.get('/fitbit/success', (req, res, next) => {
-  console.log('/fitbit/success');
+app.get('/auth/fitbit/success', (req, res, next) => {
+  console.log('/auth/fitbit/success');
   res.send(req.user);
 });
-app.get('/fitbit/failure', (req, res, next) => {
-  console.log('/fitbit/failure');
+app.get('/auth/fitbit/failure', (req, res, next) => {
+  console.log('/auth/fitbit/failure');
   res.send(res.statusMessage);
 });
 
@@ -171,15 +171,12 @@ app.get('/', (req, res, next) => {
 });
 
 // heartbeat
-app.get(
-  '/heartbeat',
-  async (_: Request, res: Response): Promise<Response> => {
-    return res.status(200).json({
-      status: 'success',
-      message: 'working',
-    });
-  }
-);
+app.get('/heartbeat', async (_: Request, res: Response): Promise<Response> => {
+  return res.status(200).json({
+    status: 'success',
+    message: 'working',
+  });
+});
 
 // Register the LINE middleware.
 // As an alternative, you could also pass the middleware in the route handler, which is what is used here.
