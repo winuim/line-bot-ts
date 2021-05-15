@@ -22,6 +22,15 @@ import OAuth2Strategy from 'passport-oauth2';
 import {v4 as genuuid} from 'uuid';
 
 import {handleEvent} from './controllers/webhook';
+import {
+  authCallback,
+  getActivity,
+  getHeartRate,
+  getProfile,
+  getSleep,
+  getSteps,
+  initAuth,
+} from './controllers/fitbit';
 
 // Setup Express configurations.
 const middlewareConfig: MiddlewareConfig = {
@@ -225,5 +234,14 @@ app.post(
     });
   }
 );
+
+// fitbit auth callback
+app.get('/fitbit/auth', initAuth);
+app.get('/fitbit/callback', authCallback);
+app.get('/fitbit/profile', getProfile);
+app.get('/fitbit/activity', getActivity);
+app.get('/fitbit/steps', getSteps);
+app.get('/fitbit/heartrate', getHeartRate);
+app.get('/fitbit/sleep', getSleep);
 
 export default app;
